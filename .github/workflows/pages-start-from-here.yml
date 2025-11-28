@@ -1,0 +1,31 @@
+name: Pages start from here
+
+on:
+  workflow_dispatch
+
+permissions:
+  pages: write    # to deploy to Pages 
+  id-token: write # to verify the deployment originates from an appropriate source
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create sample file
+        run: echo "<h1>Laboratorio fra pari!</h1>" > index.html
+      - name: Upload artifact
+        # https://github.com/actions/upload-pages-artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: .
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        # https://github.com/actions/deploy-pages
+        uses: actions/deploy-pages@v4

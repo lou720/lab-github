@@ -1,0 +1,43 @@
+# https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages 
+
+
+name: Deploy Vue app via GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+
+# https://www.graphite.com/guides/github-actions-permissions
+# https://docs.github.com/en/actions/tutorials/authenticate-with-github_token
+permissions:
+  contents: read  # can read repo contents
+  pages: write    # to deploy to Pages 
+  id-token: write # to verify the deployment originates from an appropriate source
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 25
+      - run: cd site
+      - run: npm ci # like install but for automation
+      - run: npm run build
+      - name: Upload artifact
+        # https://github.com/actions/upload-pages-artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: site/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        # https://github.com/actions/deploy-pages
+        uses: actions/deploy-pages@v4
